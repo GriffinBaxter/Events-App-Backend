@@ -2,7 +2,6 @@ const db = require('../../config/db');
 const passwords = require('../models/passwords.model');
 const cryptoRandomString = require('crypto-random-string');
 
-
 exports.register = async function (firstName, lastName, email, password) {
     const conn = await db.getPool().getConnection();
     const query = 'insert into user (email, first_name, last_name, password) values (?, ?, ?, ?)';
