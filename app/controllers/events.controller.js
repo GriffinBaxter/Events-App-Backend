@@ -11,18 +11,20 @@ exports.view = async function (req, res) {
 
         let categoryIdsExist = true;
 
-        if (Array.isArray(categoryIds)) {
-            const categoryIdsLength = categoryIds.length;
-            for (let i = 0; i < categoryIdsLength; i++) {
-                let categoryExists = await events.categoryExists(categoryIds[i]);
+        if (categoryIds != null) {
+            if (Array.isArray(categoryIds)) {
+                const categoryIdsLength = categoryIds.length;
+                for (let i = 0; i < categoryIdsLength; i++) {
+                    let categoryExists = await events.categoryExists(categoryIds[i]);
+                    if (categoryExists.length === 0) {
+                        categoryIdsExist = false;
+                    }
+                }
+            } else {
+                let categoryExists = await events.categoryExists(categoryIds);
                 if (categoryExists.length === 0) {
                     categoryIdsExist = false;
                 }
-            }
-        } else {
-            let categoryExists = await events.categoryExists(categoryIds);
-            if (categoryExists.length === 0) {
-                categoryIdsExist = false;
             }
         }
 
