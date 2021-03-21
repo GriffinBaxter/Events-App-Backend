@@ -111,3 +111,57 @@ exports.retrieve = async function (req, res) {
         res.status(500).send();
     }
 };
+
+exports.change = async function (req, res) {
+    try {
+        const firstName = req.body.firstName;
+        const lastName = req.body.lastName;
+        const email = req.body.email;
+        const password = req.body.password;
+        const currentPassword = req.body.currentPassword;
+
+        const userToken = req.header('X-Authorization');
+        const idFromParam = req.params.id;
+
+        const userListFromToken = await users.getUserFromToken(userToken);
+
+        const userListFromEmail = await users.getUserFromEmail(email);
+
+        const currentPasswordHash = await users.hashPassword(currentPassword);
+
+        if (userListFromToken.length === 0) {
+            res.statusMessage = "Unauthorized";
+            res.status(401).send();
+        } else if (userListFromToken[0].id.toString() !== idFromParam) {
+            res.statusMessage = "Forbidden";
+            res.status(403).send();
+        } else if (
+            (password == null && currentPassword != null) || (currentPassword == null && password != null) ||
+            !(email == null || email.includes("@")) || password === "" ||
+            userListFromEmail.length !== 0 ||
+            (currentPassword != null && currentPasswordHash !== userListFromToken[0].password)
+        ) {
+            res.statusMessage = "Bad Request";
+            res.status(400).send();
+        } else {
+            if (firstName != null) {
+                await users.updateFirstFromId(firstName, idFromParam);
+            }
+            if (lastName != null) {
+                await users.updateLastFromId(lastName, idFromParam);
+            }
+            if (email != null) {
+                await users.updateEmailFromId(email, idFromParam);
+            }
+            if (password != null) {
+                await users.updatePasswordFromId(password, idFromParam);
+            }
+            res.statusMessage = "OK";
+            res.status(200).send();
+        }
+    } catch (err) {
+        console.log(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+    }
+};

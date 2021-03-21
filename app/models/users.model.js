@@ -60,3 +60,36 @@ exports.getUserFromId = async function(id) {
     conn.release();
     return rows;
 };
+
+exports.updateFirstFromId = async function (firstName, id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update user set first_name = ? where id = ?';
+    await conn.query(query, [firstName, id])
+    conn.release();
+};
+
+exports.updateLastFromId = async function (lastName, id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update user set last_name = ? where id = ?';
+    await conn.query(query, [lastName, id])
+    conn.release();
+};
+
+exports.updateEmailFromId = async function (email, id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update user set email = ? where id = ?';
+    await conn.query(query, [email, id])
+    conn.release();
+};
+
+exports.updatePasswordFromId = async function (password, id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update user set password = ? where id = ?';
+    const passwordHash = await passwords.hash(password);
+    await conn.query(query, [passwordHash, id])
+    conn.release();
+};
+
+exports.hashPassword = async function (password) {
+    return passwords.hash(password);
+}
