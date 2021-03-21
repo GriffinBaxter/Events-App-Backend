@@ -123,13 +123,18 @@ exports.change = async function (req, res) {
         const userToken = req.header('X-Authorization');
         const idFromParam = req.params.id;
 
+        const userListFromId = await users.getUserFromId(idFromParam);
+
         const userListFromToken = await users.getUserFromToken(userToken);
 
         const userListFromEmail = await users.getUserFromEmail(email);
 
         const currentPasswordHash = await users.hashPassword(currentPassword);
 
-        if (userListFromToken.length === 0) {
+        if (userListFromId.length === 0) {
+            res.statusMessage = "Not Found";
+            res.status(404).send();
+        } else if (userListFromToken.length === 0) {
             res.statusMessage = "Unauthorized";
             res.status(401).send();
         } else if (userListFromToken[0].id.toString() !== idFromParam) {
