@@ -12,6 +12,9 @@ module.exports = function () {
     app.use(allowCrossOriginRequestsMiddleware);
     app.use(bodyParser.json());
     app.use(bodyParser.raw({ type: 'text/plain' }));  // for the /executeSql endpoint
+    app.use(bodyParser.raw({ type: 'image/png' }));
+    app.use(bodyParser.raw({ type: 'image/jpeg', limit:'5mb' }));
+    app.use(bodyParser.raw({ type: 'image/gif' }));
 
     // DEBUG (you can remove these)
     app.use((req, res, next) => {
@@ -27,6 +30,7 @@ module.exports = function () {
     require('../app/routes/backdoor.routes')(app);
     require('../app/routes/events.routes')(app);
     require('../app/routes/users.routes')(app);
+    require('../app/routes/users.images.routes')(app);
 
     return app;
 };
