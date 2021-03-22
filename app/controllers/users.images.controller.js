@@ -1,9 +1,11 @@
-const usersImages = require('../models/users.images.model');
 const users = require('../models/users.model');
+const fs = require('mz/fs');
+
+const imageDirectory = './storage/images/';
 
 exports.set = async function (req, res) {
     try {
-        const bruh = req.body;
+        const testBody = req.body;
 
         const userToken = req.header('X-Authorization');
         const idFromParam = req.params.id;
@@ -21,13 +23,40 @@ exports.set = async function (req, res) {
         } else if (userListFromToken[0].id.toString() !== idFromParam) {
             res.statusMessage = "Forbidden";
             res.status(403).send();
-        } else if (0 === 1) {
-            // todo: bad request
+        } else if (!req.is("image/png") && !req.is("image/jpeg") && !req.is("image/gif")) {
+            res.statusMessage = "Bad Request";
+            res.status(400).send();
         } else {
-            res.statusMessage = "OK";
-            res.status(200).send(bruh);
-        }
+            const files = await fs.readdir(imageDirectory);
 
+            const userImages = files.filter((file) => file.startsWith("user"));
+
+            let extension;
+            if (req.is("image/png")) {
+                extension = ".png";
+            } else if (req.is("image/jpeg")) {
+                extension = ".jpg";
+            } else {
+                extension = ".gif";
+            }
+
+            const imageName = "user_" + (userImages.length + 1) + extension;
+
+            await fs.writeFile(imageDirectory + imageName, testBody);
+
+            let imageFilenameFromId = await users.getImageFilenameFromId(idFromParam);
+            imageFilenameFromId = imageFilenameFromId[0].image_filename;
+
+            await users.updateImageFilenameFromId(imageName, idFromParam);
+
+            if (imageFilenameFromId == null) {
+                res.statusMessage = "Created";
+                res.status(201).send();
+            } else {
+                res.statusMessage = "OK";
+                res.status(200).send();
+            }
+        }
     } catch (err) {
         console.log(err);
         res.statusMessage = "Internal Server Error";
