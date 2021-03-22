@@ -92,3 +92,18 @@ exports.updatePasswordFromId = async function (password, id) {
 exports.hashPassword = async function (password) {
     return passwords.hash(password);
 }
+
+exports.getImageFilenameFromId = async function (id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'select image_filename from user where id = ?';
+    const [ rows ] = await conn.query(query, [id])
+    conn.release();
+    return rows;
+};
+
+exports.updateImageFilenameFromId = async function (imageName, id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update user set image_filename = ? where id = ?';
+    await conn.query(query, [imageName, id])
+    conn.release();
+};
