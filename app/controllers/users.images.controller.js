@@ -5,7 +5,7 @@ const imageDirectory = './storage/images/';
 
 exports.set = async function (req, res) {
     try {
-        const testBody = req.body;
+        const image = req.body;
 
         const userToken = req.header('X-Authorization');
         const idFromParam = req.params.id;
@@ -42,7 +42,7 @@ exports.set = async function (req, res) {
 
             const imageName = "user_" + (userImages.length + 1) + extension;
 
-            await fs.writeFile(imageDirectory + imageName, testBody);
+            await fs.writeFile(imageDirectory + imageName, image);
 
             let imageFilenameFromId = await users.getImageFilenameFromId(idFromParam);
             imageFilenameFromId = imageFilenameFromId[0].image_filename;
