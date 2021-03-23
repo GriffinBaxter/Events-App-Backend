@@ -61,35 +61,35 @@ exports.set = async function (req, res) {
             let imageFilenameFromId = await users.getImageFilenameFromId(idFromParam);
             imageFilenameFromId = imageFilenameFromId[0].image_filename;
 
+            const files = await fs.readdir(imageDirectory);
+
+            const userImages = files.filter((file) => file.startsWith("user"));
+            const num = Number(
+                userImages[userImages.length - 1].substr(
+                    userImages[userImages.length - 1].indexOf('_') + 1
+                ).slice(0, -4)
+            ) + 1;
+
+            let extension;
+            if (req.is("image/png")) {
+                extension = ".png";
+            } else if (req.is("image/jpeg")) {
+                extension = ".jpg";
+            } else {
+                extension = ".gif";
+            }
+
+            const imageName = "user_" + num + extension;
+
+            await fs.writeFile(imageDirectory + imageName, image);
+
+            await users.updateImageFilenameFromId(imageName, idFromParam);
+
             if (imageFilenameFromId == null) {
-                const files = await fs.readdir(imageDirectory);
-
-                const userImages = files.filter((file) => file.startsWith("user"));
-                const num = Number(
-                    userImages[userImages.length - 1].substr(
-                        userImages[userImages.length - 1].indexOf('_') + 1
-                    ).slice(0, -4)
-                ) + 1;
-
-                let extension;
-                if (req.is("image/png")) {
-                    extension = ".png";
-                } else if (req.is("image/jpeg")) {
-                    extension = ".jpg";
-                } else {
-                    extension = ".gif";
-                }
-
-                const imageName = "user_" + num + extension;
-
-                await fs.writeFile(imageDirectory + imageName, image);
-
-                await users.updateImageFilenameFromId(imageName, idFromParam);
-
                 res.statusMessage = "Created";
                 res.status(201).send();
             } else {
-                await fs.writeFile(imageDirectory + imageFilenameFromId, image);
+                fs.unlink(imageDirectory + imageFilenameFromId);
 
                 res.statusMessage = "OK";
                 res.status(200).send();
@@ -111,25 +111,30 @@ exports.delete = async function (req, res) {
 
         const userListFromToken = await users.getUserFromToken(userToken);
 
-        let imageFilenameFromId = await users.getImageFilenameFromId(idFromParam);
-        imageFilenameFromId = imageFilenameFromId[0].image_filename;
-
-        if (userListFromId.length === 0 || imageFilenameFromId == null) {
+        if (userListFromId.length === 0) {
             res.statusMessage = "Not Found";
             res.status(404).send();
-        } else if (userListFromToken.length === 0) {
-            res.statusMessage = "Unauthorized";
-            res.status(401).send();
-        } else if (userListFromToken[0].id.toString() !== idFromParam) {
-            res.statusMessage = "Forbidden";
-            res.status(403).send();
         } else {
-            fs.unlink(imageDirectory + imageFilenameFromId);
+            let imageFilenameFromId = await users.getImageFilenameFromId(idFromParam);
+            imageFilenameFromId = imageFilenameFromId[0].image_filename;
 
-            await users.updateImageFilenameFromId(null, idFromParam);
+            if (imageFilenameFromId == null) {
+                res.statusMessage = "Not Found";
+                res.status(404).send();
+            } else if (userListFromToken.length === 0) {
+                res.statusMessage = "Unauthorized";
+                res.status(401).send();
+            } else if (userListFromToken[0].id.toString() !== idFromParam) {
+                res.statusMessage = "Forbidden";
+                res.status(403).send();
+            } else {
+                fs.unlink(imageDirectory + imageFilenameFromId);
 
-            res.statusMessage = "OK";
-            res.status(200).send();
+                await users.updateImageFilenameFromId(null, idFromParam);
+
+                res.statusMessage = "OK";
+                res.status(200).send();
+            }
         }
     } catch (err) {
         console.log(err);
