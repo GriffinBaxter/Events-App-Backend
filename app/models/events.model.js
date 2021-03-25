@@ -145,3 +145,18 @@ exports.getEventFromId = async function (eventId) {
     conn.release();
     return rows;
 }
+
+exports.getImageFilenameFromEventId = async function (id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'select image_filename from event where id = ?';
+    const [ rows ] = await conn.query(query, [id])
+    conn.release();
+    return rows;
+};
+
+exports.updateImageFilenameFromEventId = async function (imageName, id) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set image_filename = ? where id = ?';
+    await conn.query(query, [imageName, id])
+    conn.release();
+};

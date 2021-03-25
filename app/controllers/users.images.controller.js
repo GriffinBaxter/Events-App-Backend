@@ -10,12 +10,13 @@ exports.retrieve = async function (req, res) {
         const userListFromId = await users.getUserFromId(idFromParam);
 
         let imageFilenameFromId = await users.getImageFilenameFromId(idFromParam);
-        imageFilenameFromId = imageFilenameFromId[0].image_filename;
 
-        if (userListFromId.length === 0 || imageFilenameFromId == null) {
+        if (userListFromId.length === 0 || imageFilenameFromId[0].image_filename == null) {
             res.statusMessage = "Not Found";
             res.status(404).send();
         } else {
+            imageFilenameFromId = imageFilenameFromId[0].image_filename;
+
             const data = await fs.readFile(imageDirectory + imageFilenameFromId);
 
             let extension = imageFilenameFromId.substr(imageFilenameFromId.indexOf('.') + 1);
@@ -64,11 +65,19 @@ exports.set = async function (req, res) {
             const files = await fs.readdir(imageDirectory);
 
             const userImages = files.filter((file) => file.startsWith("user"));
-            const num = Number(
-                userImages[userImages.length - 1].substr(
-                    userImages[userImages.length - 1].indexOf('_') + 1
-                ).slice(0, -4)
-            ) + 1;
+            let num = 1;
+            for (let i = 0; i < userImages.length; i++) {
+                let currentNum = Number(
+                    userImages[i].substr(userImages[i].indexOf('_') + 1).slice(0, -4)
+                ) + 1;
+
+                if (!isNaN(currentNum)) {
+                    currentNum = Number(currentNum);
+                    if (currentNum > num) {
+                        num = currentNum;
+                    }
+                }
+            }
 
             let extension;
             if (req.is("image/png")) {
