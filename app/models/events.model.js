@@ -116,3 +116,24 @@ exports.categoryExists = async function (categoryId) {
     conn.release();
     return rows;
 }
+
+exports.createEvent = async function (
+    title, description, date, isOnline, url, venue, capacity, requiresAttendanceControl, fee, id
+) {
+    const conn = await db.getPool().getConnection();
+    const query = 'insert into event (' +
+        'title, description, date, is_online, url, venue, capacity, requires_attendance_control, fee, organizer_id' +
+        ') values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const [ result ] = await conn.query(
+        query, [title, description, date, isOnline, url, venue, capacity, requiresAttendanceControl, fee, id]
+    );
+    conn.release();
+    return result;
+};
+
+exports.createEventCategory = async function (eventId, categoryId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'insert into event_category (event_id, category_id) values (?, ?)';
+    await conn.query(query, [eventId, categoryId]);
+    conn.release();
+};

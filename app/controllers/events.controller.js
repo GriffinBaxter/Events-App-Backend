@@ -1,4 +1,5 @@
 const events = require('../models/events.model');
+const users = require('../models/users.model');
 
 exports.view = async function (req, res) {
     try {
@@ -76,6 +77,77 @@ exports.view = async function (req, res) {
             res.status(200).send(result);
         }
 
+    } catch (err) {
+        console.log(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+    }
+};
+
+exports.create = async function (req, res) {
+    try {
+        const title = req.body.title;
+        const description = req.body.description;
+        const categoryIds = req.body.categoryIds;
+        const date = req.body.date;
+        let isOnline = req.body.isOnline;
+        const url = req.body.url;
+        const venue = req.body.venue;
+        const capacity = req.body.capacity;
+        let requiresAttendanceControl = req.body.requiresAttendanceControl;
+        let fee = req.body.fee;
+        if (isOnline == null) {
+            isOnline = false;
+        }
+        if (requiresAttendanceControl == null) {
+            requiresAttendanceControl = false;
+        }
+        if (fee == null) {
+            fee = 0.00;
+        }
+
+        const token = req.header('X-Authorization');
+
+        const userListFromToken = await users.getUserFromToken(token);
+
+        let categoryIdsExist = true;
+
+        if (categoryIds != null) {
+            const categoryIdsLength = categoryIds.length;
+            for (let i = 0; i < categoryIdsLength; i++) {
+                let categoryExists = await events.categoryExists(categoryIds[i]);
+                if (categoryExists.length === 0) {
+                    categoryIdsExist = false;
+                }
+            }
+        }
+
+        if (userListFromToken.length === 0) {
+            res.statusMessage = "Unauthorized";
+            res.status(401).send();
+        } else if (
+            title == null || description == null || categoryIds == null ||
+            (date != null && new Date(date) < new Date()) || !categoryIdsExist
+        ) {
+            res.statusMessage = "Bad Request";
+            res.status(400).send();
+        } else {
+            const idFromToken = userListFromToken[0].id;
+
+            const result = await events.createEvent(
+                title, description, date, isOnline, url, venue, capacity, requiresAttendanceControl, fee, idFromToken
+            );
+
+            const eventId = result.insertId
+
+            const categoryIdsLength = categoryIds.length;
+            for (let i = 0; i < categoryIdsLength; i++) {
+                await events.createEventCategory(eventId, categoryIds[i]);
+            }
+
+            res.statusMessage = "Created";
+            res.status(201).send({eventId: eventId});
+        }
     } catch (err) {
         console.log(err);
         res.statusMessage = "Internal Server Error";
