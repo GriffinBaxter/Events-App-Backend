@@ -137,3 +137,11 @@ exports.createEventCategory = async function (eventId, categoryId) {
     await conn.query(query, [eventId, categoryId]);
     conn.release();
 };
+
+exports.getEventFromId = async function (eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'SELECT * FROM event WHERE id = ?';
+    const [ rows ] = await conn.query( query, [eventId] );
+    conn.release();
+    return rows;
+}

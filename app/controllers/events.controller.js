@@ -154,3 +154,65 @@ exports.create = async function (req, res) {
         res.status(500).send();
     }
 };
+
+exports.retrieve = async function (req, res) {
+    try {
+        const eventIdFromParam = req.params.id;
+
+        const eventListFromId = await events.getEventFromId(eventIdFromParam);
+        if (eventListFromId.length === 0) {
+            res.statusMessage = "Not Found";
+            res.status(404).send();
+        } else {
+            const eventFromId = eventListFromId[0];
+
+            let categoryList = [];
+            let categories = await events.getCategoriesFromEventId(eventFromId.id);
+            const categoriesLength = categories.length;
+            for (let i = 0; i < categoriesLength; i++) {
+                categoryList.push(categories[i].category_id);
+            }
+
+            const organizerFirstLast = await events.getOrganizerFirstLastFromEventId(eventFromId.id);
+            const organizerFirstName = organizerFirstLast[0].first_name;
+            const organizerLastName = organizerFirstLast[0].last_name;
+
+            let numAcceptedAttendees = await events.getNumAcceptedAttendeesFromEventId(eventFromId.id);
+            numAcceptedAttendees = numAcceptedAttendees[0].count
+
+            let isOnline = false;
+            if (eventFromId.is_online === 1) {
+                isOnline = true;
+            }
+            let requiresAttendanceControl = false;
+            if (eventFromId.requires_attendance_control === 1) {
+                requiresAttendanceControl = true;
+            }
+
+            res.statusMessage = "OK";
+            res.status(200).send(
+                {
+                    eventId: eventFromId.id,
+                    title: eventFromId.title,
+                    categories: categoryList,
+                    organizerFirstName: organizerFirstName,
+                    organizerLastName: organizerLastName,
+                    numAcceptedAttendees: numAcceptedAttendees,
+                    capacity: eventFromId.capacity,
+                    description: eventFromId.description,
+                    organizerId: eventFromId.organizer_id,
+                    date: eventFromId.date,
+                    isOnline: isOnline,
+                    url: eventFromId.url,
+                    venue: eventFromId.venue,
+                    requiresAttendanceControl: requiresAttendanceControl,
+                    fee: eventFromId.fee,
+                }
+            );
+        }
+    } catch (err) {
+        console.log(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+    }
+};
