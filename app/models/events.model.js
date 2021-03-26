@@ -268,3 +268,25 @@ exports.getAttendeeStatusFromStatusId = async function (statusId) {
     conn.release();
     return rows;
 };
+
+exports.createEventAttendee = async function (eventId, userId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'insert into event_attendees (event_id, user_id, attendance_status_id) values (?, ?, ?)';
+    await conn.query(query, [eventId, userId, 2]);
+    conn.release();
+};
+
+exports.getEventAttendeeFromEventIdUserId = async function (eventId, userId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'select * from event_attendees where event_id = ? and user_id = ?';
+    const [ rows ] = await conn.query(query, [eventId, userId])
+    conn.release();
+    return rows;
+};
+
+exports.deleteEventAttendeesFromEventIdUserId = async function (eventId, userId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'delete from event_attendees where event_id = ? and user_id = ?';
+    await conn.query(query, [eventId, userId]);
+    conn.release();
+};
