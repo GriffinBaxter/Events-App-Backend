@@ -39,7 +39,7 @@ exports.retrieve = async function (req, res) {
                     (isCurrentUser && (status === "pending" || status === "rejected"))
                 ) {
                     result.push({
-                        attendeeId: eventAttendeesList[i].id,
+                        attendeeId: eventAttendeesList[i].user_id,
                         status: status,
                         firstName: user.first_name,
                         lastName: user.last_name,
