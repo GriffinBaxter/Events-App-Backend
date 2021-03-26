@@ -232,7 +232,7 @@ exports.deleteEventAttendeesFromId = async function (eventId) {
 
 exports.getCategories = async function () {
     const conn = await db.getPool().getConnection();
-    const query = 'select * from category';
+    const query = 'select * from category order by id';
     const [ rows ] = await conn.query(query, [])
     conn.release();
     return rows;
@@ -251,4 +251,20 @@ exports.updateImageFilenameFromEventId = async function (imageName, id) {
     const query = 'update event set image_filename = ? where id = ?';
     await conn.query(query, [imageName, id])
     conn.release();
+};
+
+exports.getEventAttendeesFromId = async function (eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'select * from event_attendees where event_id = ? order by date_of_interest ASC';
+    const [ rows ] = await conn.query(query, [eventId])
+    conn.release();
+    return rows;
+};
+
+exports.getAttendeeStatusFromStatusId = async function (statusId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'select name from attendance_status where id = ?';
+    const [ rows ] = await conn.query(query, [statusId])
+    conn.release();
+    return rows;
 };
