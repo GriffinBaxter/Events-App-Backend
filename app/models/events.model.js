@@ -290,3 +290,18 @@ exports.deleteEventAttendeesFromEventIdUserId = async function (eventId, userId)
     await conn.query(query, [eventId, userId]);
     conn.release();
 };
+
+exports.updateAttendanceStatusIdFromEventIdUserId = async function (statusId, eventId, userId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event_attendees set attendance_status_id = ? where event_id = ? and user_id = ?';
+    await conn.query(query, [statusId, eventId, userId])
+    conn.release();
+};
+
+exports.getAttendeeStatusIdFromStatusName = async function (statusName) {
+    const conn = await db.getPool().getConnection();
+    const query = 'select id from attendance_status where name = ?';
+    const [ rows ] = await conn.query(query, [statusName])
+    conn.release();
+    return rows;
+};

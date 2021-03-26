@@ -151,3 +151,55 @@ exports.delete = async function (req, res) {
         res.status(500).send();
     }
 };
+
+exports.change = async function (req, res) {
+    try {
+        const status = req.body.status;
+
+        const userToken = req.header('X-Authorization');
+        const eventIdFromParam = req.params.event_id;
+        const userIdFromParam = req.params.user_id;
+
+        const eventListFromId = await events.getEventFromId(eventIdFromParam);
+
+        const userListFromId = await users.getUserFromId(userIdFromParam);
+
+        const userListFromToken = await users.getUserFromToken(userToken);
+
+        const eventAttendeesList = await events.getEventAttendeesFromId(eventIdFromParam);
+        let hasJoined = false;
+        if (userListFromId.length !== 0) {
+            for (let i = 0; i < eventAttendeesList.length; i++) {
+                if (userListFromId[0].id === eventAttendeesList[i].user_id) {
+                    hasJoined = true;
+                }
+            }
+        }
+
+        if (eventListFromId.length === 0) {
+            res.statusMessage = "Not Found";
+            res.status(404).send();
+        } else if (userListFromToken.length === 0) {
+            res.statusMessage = "Unauthorized";
+            res.status(401).send();
+        } else if (!hasJoined || userListFromToken[0].id !== eventListFromId[0].organizer_id) {
+            res.statusMessage = "Forbidden";
+            res.status(403).send();
+        } else if (status !== "accepted" && status !== "pending" && status !== "rejected") {
+            res.statusMessage = "Bad Request";
+            res.status(400).send();
+        } else {
+            let statusId = await events.getAttendeeStatusIdFromStatusName(status);
+            statusId = statusId[0].id;
+
+            await events.updateAttendanceStatusIdFromEventIdUserId(statusId, eventIdFromParam, userIdFromParam)
+
+            res.statusMessage = "OK";
+            res.status(200).send();
+        }
+    } catch (err) {
+        console.log(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+    }
+};

@@ -5,4 +5,7 @@ module.exports = function (app) {
         .get(events.retrieve)
         .post(events.request)
         .delete(events.delete);
+
+    app.route(app.rootUrl + '/events/:event_id/attendees/:user_id')
+        .patch(events.change);
 };
