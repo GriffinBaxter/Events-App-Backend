@@ -216,6 +216,28 @@ exports.updateFeeFromId = async function (fee, eventId) {
     conn.release();
 };
 
+exports.deleteEventFromId = async function (eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'delete from event where id = ?';
+    await conn.query(query, [eventId]);
+    conn.release();
+};
+
+exports.deleteEventAttendeesFromId = async function (eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'delete from event_attendees where event_id = ?';
+    await conn.query(query, [eventId]);
+    conn.release();
+};
+
+exports.getCategories = async function () {
+    const conn = await db.getPool().getConnection();
+    const query = 'select * from category';
+    const [ rows ] = await conn.query(query, [])
+    conn.release();
+    return rows;
+};
+
 exports.getImageFilenameFromEventId = async function (id) {
     const conn = await db.getPool().getConnection();
     const query = 'select image_filename from event where id = ?';

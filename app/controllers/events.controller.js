@@ -309,3 +309,60 @@ exports.change = async function (req, res) {
         res.status(500).send();
     }
 };
+
+exports.delete = async function (req, res) {
+    try {
+        const userToken = req.header('X-Authorization');
+        const eventIdFromParam = req.params.id;
+
+        const eventListFromId = await events.getEventFromId(eventIdFromParam);
+
+        const userListFromToken = await users.getUserFromToken(userToken);
+
+        if (eventListFromId.length === 0) {
+            res.statusMessage = "Not Found";
+            res.status(404).send();
+        } else if (userListFromToken.length === 0) {
+            res.statusMessage = "Unauthorized";
+            res.status(401).send();
+        } else if (userListFromToken[0].id !== eventListFromId[0].organizer_id) {
+            res.statusMessage = "Forbidden";
+            res.status(403).send();
+        } else {
+            await events.deleteEventAttendeesFromId(eventIdFromParam);
+            await events.deleteEventCategoriesFromId(eventIdFromParam);
+            await events.deleteEventFromId(eventIdFromParam);
+
+            res.statusMessage = "OK";
+            res.status(200).send();
+        }
+    } catch (err) {
+        console.log(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+    }
+};
+
+exports.retrieveCategories = async function (req, res) {
+    try {
+        const categories = await events.getCategories();
+
+        let categoryList = [];
+        const categoriesLength = categories.length;
+        for (let i = 0; i < categoriesLength; i++) {
+            categoryList.push(
+                {
+                    categoryId: categories[i].id,
+                    name: categories[i].name,
+                }
+            );
+        }
+
+        res.statusMessage = "OK";
+        res.status(200).send(categoryList);
+    } catch (err) {
+        console.log(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+    }
+};
