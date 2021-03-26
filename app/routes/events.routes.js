@@ -6,5 +6,6 @@ module.exports = function (app) {
         .post(events.create);
 
     app.route(app.rootUrl + '/events/:id')
-        .get(events.retrieve);
+        .get(events.retrieve)
+        .patch(events.change);
 };

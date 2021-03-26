@@ -138,6 +138,13 @@ exports.createEventCategory = async function (eventId, categoryId) {
     conn.release();
 };
 
+exports.deleteEventCategoriesFromId = async function (eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'delete from event_category where event_id = ?';
+    await conn.query(query, [eventId]);
+    conn.release();
+};
+
 exports.getEventFromId = async function (eventId) {
     const conn = await db.getPool().getConnection();
     const query = 'SELECT * FROM event WHERE id = ?';
@@ -145,6 +152,69 @@ exports.getEventFromId = async function (eventId) {
     conn.release();
     return rows;
 }
+
+exports.updateTitleFromId = async function (title, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set title = ? where id = ?';
+    await conn.query(query, [title, eventId])
+    conn.release();
+};
+
+exports.updateDescriptionFromId = async function (description, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set description = ? where id = ?';
+    await conn.query(query, [description, eventId])
+    conn.release();
+};
+
+exports.updateDateFromId = async function (date, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set date = ? where id = ?';
+    await conn.query(query, [date, eventId])
+    conn.release();
+};
+
+exports.updateIsOnlineFromId = async function (isOnline, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set is_online = ? where id = ?';
+    await conn.query(query, [isOnline, eventId])
+    conn.release();
+};
+
+exports.updateUrlFromId = async function (url, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set url = ? where id = ?';
+    await conn.query(query, [url, eventId])
+    conn.release();
+};
+
+exports.updateVenueFromId = async function (venue, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set venue = ? where id = ?';
+    await conn.query(query, [venue, eventId])
+    conn.release();
+};
+
+exports.updateCapacityFromId = async function (capacity, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set capacity = ? where id = ?';
+    await conn.query(query, [capacity, eventId])
+    conn.release();
+};
+
+exports.updateRequiresAttendanceControlFromId = async function (requiresAttendanceControl, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set requires_attendance_control = ? where id = ?';
+    await conn.query(query, [requiresAttendanceControl, eventId])
+    conn.release();
+};
+
+exports.updateFeeFromId = async function (fee, eventId) {
+    const conn = await db.getPool().getConnection();
+    const query = 'update event set fee = ? where id = ?';
+    await conn.query(query, [fee, eventId])
+    conn.release();
+};
 
 exports.getImageFilenameFromEventId = async function (id) {
     const conn = await db.getPool().getConnection();

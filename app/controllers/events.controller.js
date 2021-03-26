@@ -216,3 +216,96 @@ exports.retrieve = async function (req, res) {
         res.status(500).send();
     }
 };
+
+exports.change = async function (req, res) {
+    try {
+        const title = req.body.title;
+        const description = req.body.description;
+        const categoryIds = req.body.categoryIds;
+        const date = req.body.date;
+        let isOnline = req.body.isOnline;
+        const url = req.body.url;
+        const venue = req.body.venue;
+        const capacity = req.body.capacity;
+        let requiresAttendanceControl = req.body.requiresAttendanceControl;
+        let fee = req.body.fee;
+
+        const userToken = req.header('X-Authorization');
+        const eventIdFromParam = req.params.id;
+
+        const eventListFromId = await events.getEventFromId(eventIdFromParam);
+
+        const userListFromToken = await users.getUserFromToken(userToken);
+
+        let categoryIdsExist = true;
+
+        if (categoryIds != null) {
+            const categoryIdsLength = categoryIds.length;
+            for (let i = 0; i < categoryIdsLength; i++) {
+                let categoryExists = await events.categoryExists(categoryIds[i]);
+                if (categoryExists.length === 0) {
+                    categoryIdsExist = false;
+                }
+            }
+        }
+
+        if (eventListFromId.length === 0) {
+            res.statusMessage = "Not Found";
+            res.status(404).send();
+        } else if (userListFromToken.length === 0) {
+            res.statusMessage = "Unauthorized";
+            res.status(401).send();
+        } else if (userListFromToken[0].id !== eventListFromId[0].organizer_id) {
+            res.statusMessage = "Forbidden";
+            res.status(403).send();
+        } else if (
+            new Date(eventListFromId[0].date) < new Date() ||
+            (date != null && new Date(date) < new Date()) || !categoryIdsExist
+        ) {
+            res.statusMessage = "Bad Request";
+            res.status(400).send();
+        } else {
+            if (title != null) {
+                await events.updateTitleFromId(title, eventIdFromParam);
+            }
+            if (description != null) {
+                await events.updateDescriptionFromId(description, eventIdFromParam);
+            }
+            if (categoryIds != null) {
+                await events.deleteEventCategoriesFromId(eventIdFromParam);
+
+                const categoryIdsLength = categoryIds.length;
+                for (let i = 0; i < categoryIdsLength; i++) {
+                    await events.createEventCategory(eventIdFromParam, categoryIds[i]);
+                }
+            }
+            if (date != null) {
+                await events.updateDateFromId(date, eventIdFromParam);
+            }
+            if (isOnline != null) {
+                await events.updateIsOnlineFromId(isOnline, eventIdFromParam);
+            }
+            if (url != null) {
+                await events.updateUrlFromId(url, eventIdFromParam);
+            }
+            if (venue != null) {
+                await events.updateVenueFromId(venue, eventIdFromParam);
+            }
+            if (capacity != null) {
+                await events.updateCapacityFromId(capacity, eventIdFromParam);
+            }
+            if (requiresAttendanceControl != null) {
+                await events.updateRequiresAttendanceControlFromId(requiresAttendanceControl, eventIdFromParam);
+            }
+            if (fee != null) {
+                await events.updateFeeFromId(fee, eventIdFromParam);
+            }
+            res.statusMessage = "OK";
+            res.status(200).send();
+        }
+    } catch (err) {
+        console.log(err);
+        res.statusMessage = "Internal Server Error";
+        res.status(500).send();
+    }
+};
