@@ -12,7 +12,8 @@ exports.register = async function (req, res) {
         if (
             firstName == null || lastName == null || email == null || password == null ||
             !email.includes("@") || password === "" ||
-            userListFromEmail.length !== 0
+            userListFromEmail.length !== 0 ||
+            firstName === "" || lastName === ""
         ) {
             res.statusMessage = "Bad Request";
             res.status(400).send();
@@ -37,7 +38,8 @@ exports.login = async function (req, res) {
 
         if (
             email == null || password == null ||
-            userListFromEmailPassword.length === 0
+            userListFromEmailPassword.length === 0 ||
+            email === "" || password === ""
         ) {
             res.statusMessage = "Bad Request";
             res.status(400).send();
@@ -144,7 +146,8 @@ exports.change = async function (req, res) {
             (password == null && currentPassword != null) || (currentPassword == null && password != null) ||
             !(email == null || email.includes("@")) || password === "" ||
             userListFromEmail.length !== 0 ||
-            (currentPassword != null && currentPasswordHash !== userListFromToken[0].password)
+            (currentPassword != null && currentPasswordHash !== userListFromToken[0].password) ||
+            firstName === "" || lastName === "" || email === "" || currentPassword === ""
         ) {
             res.statusMessage = "Bad Request";
             res.status(400).send();

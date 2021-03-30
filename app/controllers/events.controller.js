@@ -127,7 +127,8 @@ exports.create = async function (req, res) {
             res.status(401).send();
         } else if (
             title == null || description == null || categoryIds == null ||
-            (date != null && new Date(date) < new Date()) || !categoryIdsExist
+            (date != null && new Date(date) < new Date()) || !categoryIdsExist ||
+            title === "" || (capacity != null && capacity < 1)
         ) {
             res.statusMessage = "Bad Request";
             res.status(400).send();
@@ -260,7 +261,8 @@ exports.change = async function (req, res) {
             res.status(403).send();
         } else if (
             new Date(eventListFromId[0].date) < new Date() ||
-            (date != null && new Date(date) < new Date()) || !categoryIdsExist
+            (date != null && new Date(date) < new Date()) || !categoryIdsExist ||
+            title === "" || (capacity != null && capacity < 1)
         ) {
             res.statusMessage = "Bad Request";
             res.status(400).send();
